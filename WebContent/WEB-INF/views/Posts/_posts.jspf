@@ -1,0 +1,9 @@
+
+<%@page import="server.classes.IPost"%>
+<%@page import="java.util.ArrayList"%>
+	
+
+<% for (IPost p : (ArrayList<IPost>)request.getAttribute("posts")) { %>
+	<% request.setAttribute("post", p); %>
+	<%@include file="/WEB-INF/views/Posts/_post.jspf" %>
+<% } %>

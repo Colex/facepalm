@@ -1,0 +1,29 @@
+<%@page import="server.classes.IUser"%>
+<%@page import="server.classes.IMessage"%>
+<%@page import="java.util.ArrayList"%>
+<%
+	ArrayList<IMessage> msgs = (ArrayList<IMessage>)request.getAttribute("inbox");
+	IUser u = (IUser)session.getAttribute("user"), inbox, contact = null;
+%>
+
+
+<div id="inbox">
+<% for (IMessage m : msgs) { %>
+	<% contact = m.getContact(u.getID()); %>
+	<% if (contact != null) { %>
+	
+		<a href="\message/<%= contact.getID() %>">
+			<div id="inbox_<%= contact.getID() %>" class="row message-div" style="<%= m.getSenderID() != u.getID() && m.getReceiving() == null ? "background-color: #EECCFF !important;" : "" %>">
+				<div class="span2" style="width:50px; margin-top: 15px; margin-left: 5px;">
+					<img src="<%= contact.getPicture() %>?s=50" width="50px" height="50px" /> 
+				</div>
+				<div class="span2" style="width: 160px; margin-left: 10px;  margin-top: 15px;">
+					<%= contact.getName() %><br>
+					<h6 id="last_pm_<%= contact.getID() %>" style="color: gray;">
+						<%= m.getPreview() %>
+					</h6>
+				</div>
+			</div>
+		</a>
+<% } } %>
+</div>

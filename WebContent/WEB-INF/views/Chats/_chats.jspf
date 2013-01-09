@@ -1,0 +1,68 @@
+<%@page import="server.classes.IChatroom"%>
+<%@page import="java.util.ArrayList"%>
+<%
+	ArrayList<IChatroom> rooms = (ArrayList<IChatroom>)request.getAttribute("rooms");
+
+	String [] cats = {"economia", "mundo", "cultura", "musica", "desporto", "ciências", "tecnologia", "multimedia"};
+	String [] labels = {"Economia", "Mundo", "Cultura", "Música", "Desporto", "Ciências", "Tecnologia", "Multimédia"};
+%>
+
+<script>
+	var showCategory = function(cat) {
+		$(".chats_cat").hide();
+		$("#chats_" + cat).show();
+	}
+</script>
+
+
+<!-- Modal -->
+<div id="create_room_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+		<h3 id="myModalLabel">Create Chat Room</h3>
+	</div>
+	<div class="modal-body">
+		<form id="create_room_form" method="post" action="\chats">
+			<input type="hidden" name="method" value="put">
+			<c id="room_title_label">Title:</c> <input type="text" id="room_title" name="title" class="input-block-level" value=""><br>	
+			Category: <select name="category" class="input-block-level">
+				<% for (int i = 0; i < cats.length; i++) { %>
+					<option value="<%= cats[i] %>"><%= labels[i] %></option>
+				<% } %>
+			</select>
+		</form>
+	</div>
+	<div class="modal-footer">
+		<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+		<button class="btn btn-primary" onClick="createChatRoom();">Create!</button>
+	</div>
+</div>
+
+
+
+<div>
+	<a href="#create_room_modal" class="btn btn-primary pull-right" role="button" data-toggle="modal"><i class="icon-plus-sign icon-white"></i> Create Chat Room</a>
+</div>
+<br><br>
+<% for (int i = 0; i < cats.length; i++) { %>	 
+	<div class="navbar" onClick="showCategory('<%= cats[i] %>');" style="cursor:pointer;">
+		<div class="navbar-inner">
+			<p class="brand"><%= labels[i] %></p>
+		</div>
+	</div>
+	<% if (rooms != null) { %>
+		<div id="chats_<%= cats[i] %>" class="chats_cat" style="display: none;">
+			<% for (IChatroom a : rooms) { %>
+				<% if (a.getSubject().equalsIgnoreCase(cats[i])) { %>
+					<div class="well">
+						<a href="\chats/<%= a.getChat_id() %>">
+							<div>
+								<b><%= a.getName() %></b>
+							</div>
+						</a>
+					</div>
+				<% } %>
+			<% } %>
+		</div>
+	<% } %>
+<% } %>

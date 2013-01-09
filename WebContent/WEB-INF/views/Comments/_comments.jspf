@@ -1,0 +1,41 @@
+<%@page import="java.util.ArrayList"%>
+<%@page import="server.classes.*"%>
+
+<%
+	ISocialmore sm = (ISocialmore)session.getAttribute("sm");
+	ArrayList<Comment> comments = post.getComments();
+	
+	IUser guy = null;
+%>
+
+<div class="container" style="position: relative; left: -20px; border-top: 1px #999999 solid; width: 90%;">
+	<% for (Comment c : comments) { %>
+		<% guy = sm.getUserByID(c.getUserId()); %>
+		<div class="row-fluid" style="background-color: #DDDDFF; margin-top: 5px;">		
+			<div class="span2" style="margin-left: 5px; width: 35px !important; ">
+				<a href="\user/<%= guy.getID() %>\">
+					<img src="<%= guy.getPicture() %>?s=32" width="32px" height="32px" />
+				</a>
+			</div>
+			<div class="span10">	
+				<%= "<b><a href=\"\\user/" + guy.getID() + "\">" + guy.getName() + "</a></b>: <c style=\"word-wrap: break-word;\">" + c.getContent() + "</c>" %>
+				<br>
+				<i style="color: gray; font-size: 10px;">
+					<%= df.format(c.getSending()) %>
+				</i>
+			</div>
+		</div>
+	<% } %>
+	<div class="row-fluid" style="margin-top: 5px;">	
+		<div class="span2" style="margin-left: 5px; width: 35px !important; ">
+			<img src="<%= user.getPicture() %>?s=32" width="32px" height="32px" />
+		</div>
+		<div class="span10">	
+			<form method="post" action="/post/<%= post.getID() %>">
+				<input type="hidden" name="method" value="put">
+				<input type="hidden" name="nounce" value="${nounce}">
+				<textarea class="comment_input shiftenter" name="content" rows="1" style="width: 100% !important;" placeholder="Write a comment... (or not, who cares?!)"></textarea>
+			</form>
+		</div>
+	</div>
+</div>

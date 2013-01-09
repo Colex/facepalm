@@ -1,0 +1,7 @@
+<%@include file="/WEB-INF/views/Users/_menu.jspf" %>
+<div class="well">
+	<b>Who is online?</b><br>
+  	<div id="online_users">
+   		
+   	</div>
+</div>

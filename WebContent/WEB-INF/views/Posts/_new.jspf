@@ -1,0 +1,15 @@
+<div style="border-bottom: 1px solid #999999;">
+	<form method="post" action="/post" enctype="multipart/form-data">
+		<input type="hidden" name="method" value="put">
+		<input type="hidden" name="nounce" value="${nounce}">
+		<input type="hidden" name="attach_count" id="attach_count" value="0">
+		<textarea id="new_post" name="content" style="width: 100%;" rows="1" placeholder="Hey buddy! What are you thinking of?"></textarea>
+		<span id="form_buttons" style="display: none;">	
+			<button id="add_attach" class="btn btn-success"><i class="icon-plus icon-white"></i>Attach</button>
+			<button class="btn btn-primary pull-right" type="submit">Post!</button>
+		</span>
+		<div id="attach">
+		</div>
+	</form>
+</div>
+<br>

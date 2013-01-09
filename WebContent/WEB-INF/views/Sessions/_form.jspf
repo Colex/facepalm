@@ -1,0 +1,19 @@
+<%@page import="server.rest.FacebookAPI"%>
+
+<form class="form-signin" method="post" action="/login" >
+	<input name="method" type="hidden" value="put" />
+	<h2 class="form-signin-heading">Welcome back!</h2>
+	<i><a href="/signup" style="position: relative; top: -15px;">or not... then click here to sign up!</a></i>
+	<input id="email" name="email" type="text" class="input-block-level" placeholder="Email address">
+	<input name="pass" type="password" class="input-block-level" placeholder="Password">
+	<input name="nounce" type="hidden" value="${nounce}">
+	<label class="checkbox pull-right">
+		<input type="checkbox" value="remember-me"> Remember me
+	</label>
+	<a href="#" onClick="window.location.replace('/recover?email=' + $('#email').val());">Forgot password...</a><br><br>
+	<button class="btn btn-info" type="submit">Sign in</button>
+	<hr>
+	<div style="text-align: center; width: 100%;">
+		<a class="btn btn-primary" style="width: 90%" type="button" href="<%= FacebookAPI.getAuthorizationURL() %>"><b>Login with Facebook</b></a>
+	</div>
+</form>

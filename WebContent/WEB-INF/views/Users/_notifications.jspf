@@ -1,0 +1,4 @@
+<div id="notifications-content" class="<%= (request.getAttribute("hide-class") != null) ? "" : "span4" %> well" style="height: 30%;">
+ 	<div id="notifications" class="console-class" style="border: 0px !important;">
+ 	</div>
+</div>

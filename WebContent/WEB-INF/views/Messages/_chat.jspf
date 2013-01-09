@@ -1,0 +1,97 @@
+
+<%@page import="server.classes.Attach"%>
+<%@page import="java.util.Date"%>
+<%@page import="java.util.ArrayList"%>
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="java.text.DateFormat"%>
+<%@page import="server.classes.IMessage"%>
+<%@page import="server.classes.IUser"%>
+
+
+<div class="span12" style="margin-right: 200px;">
+	
+	<% if (request.getAttribute("dest") != null) { %>
+	<div style="margin-top: 0px" class="form-send-private">	
+		<form id="new_pm" name="send_pm" method="post" action="/message/${dest.getID()}">
+			<input type="hidden" name="method" value="put">
+			
+ 			<input id="rcvid" type="hidden" name="receiverid" value="${dest.getID()}">
+			<div class="row">
+				<div class="span1" style="margin-left: 30px; width: 40px;">
+					<img src="${dest.getPicture()}?s=40" width="40px" height="40px" />
+				</div>
+				<div class="span4" style="width: 80%;">	
+					<input type="text" autocomplete="off" name="dest" id="users_list" value="${dest.getName()}" class="input-block-level" readonly><br>
+				</div>
+			</div>
+			<br>
+			New Message: <textarea id="pm_content" name="content" class="input-block-level shitfenter" rows="1" cols="50" placeholder="Type your message here..."></textarea>
+			<div class="row-fluid">
+				<div class="span4"><input id="attachments" name="attach" type="file" multiple></div>
+				<div class="span4 pull-right"><a href="#" class="pull-right"><i class="icon-time" title="Schedule delivery" onClick="showScheduler();"></i></a><input id="schedule" class="input-block-level" style="display: none;" name="attach" type="text" placeholder="hh:mm dd/mm/yyyy" value=""></div>
+			</div>
+			<a href="#" id="send_pm" class="btn btn-primary pull-right">Send</a><br>
+			<hr>
+		</form>
+		
+		<% 
+		IUser user	 	= (IUser)session.getAttribute("user");
+		IUser dest 		= (IUser)request.getAttribute("dest");
+		IUser sender	= null;
+		ArrayList<IMessage> chat = (ArrayList<IMessage>)user.getMessages(dest.getID());
+		DateFormat df	= new SimpleDateFormat("hh:mm, d MMM yyyy");
+		%>
+		
+		<div id="pm_with_<%= dest.getID() %>">
+		<% for (IMessage m : chat) { %>
+			<% sender = m.getSender(); %>
+			<div style="overflow: hidden; background-color: <%= sender.getID() == user.getID() ? "#FFFFFF" : "#EFEFFF" %>">
+				<div style="margin-top: 5px;">
+					<div class="span2" style="margin: 5px; width: 10%; height: 60px;">
+						<a href="\user/<%= sender.getID() %>">
+							<img src="<%= sender.getPicture() %>?s=50" height="50px" width="50px"/>
+						</a>
+					</div>
+					<div class="span2" style="width: 85%;">
+						<a href="/user/<%= sender.getID() %>"><b><%= sender.getName() %></b></a>
+						<b><i><span style="float: right; color: gray; font-size: 10px;">
+						<% if (m.getSenderID() == user.getID() && m.getReceiving() == null) { %>
+							<a href="/cancel-message/<%= m.getID() %>"><i class="icon-trash" title="Cancel message"></i></a>
+						<% } %>
+						<%= df.format(m.getSending()) %>
+						<% if (m.getReceiving() != null) { %>
+							<i class="icon-eye-open" title="<%= df.format(m.getReceiving()) %>"></i>
+						<% } %>
+						</span></i></b>
+						<br>
+						<% if (m.getSenderID() != user.getID()) { %>
+							<%= m.read() %>
+						<% } else { %>
+							<%= m.getContent() %>
+						<% } %>
+						<table>
+			  				<tbody>
+					  			<tr>
+					  			<% for (Attach a : m.getAttachments()) { %>
+					  				<td>
+					  					<a href="<%= a.getFile_path() %>">
+					  						<img class="attach_img" src="<%= a.getFile_path() %>" width="60" /><br>
+					  					</a>
+					  				</td>
+					  			<% } %>
+					  			</tr>
+					  		</tbody>
+			  			</table>
+					</div>
+				</div>
+			</div>
+		<% } %>
+		</div>
+		<br><br>
+	</div>
+	<% } else { %> 
+	<div class="well" style="text-align: center;">
+		<br><h3>No messages to show!</h3><br>
+	</div>
+	<% } %>
+</div>

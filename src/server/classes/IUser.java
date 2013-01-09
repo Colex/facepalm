@@ -1,0 +1,55 @@
+package server.classes;
+
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Date;
+
+public interface IUser extends Remote {
+	public String getName() throws RemoteException;
+	public String getEmail() throws RemoteException;
+	public String getEmailHash() throws RemoteException;
+	public boolean sendPrivateMessage(int receiverID, String content) throws RemoteException;
+	public void addConnection(ISocialClient sm) throws RemoteException;
+	public void logout(ISocialClient sm) throws RemoteException;
+	public Boolean ping() throws RemoteException;
+	public ArrayList<PrivateMessage> getMyMessages() throws RemoteException;
+	public int createChatroom(String subject, String name) throws RemoteException;
+	public int post(String content) throws RemoteException;
+	public int post(String content, ArrayList<String> url) throws RemoteException;
+	public boolean joinChatroom(int chatid, String type) throws RemoteException;
+	public boolean reply(String content, int post_id) throws RemoteException;
+	public ArrayList<IPost> getPosts() throws RemoteException;
+	public boolean vote(int chatid, int rate) throws RemoteException;
+	public boolean amIowner (IPost p) throws RemoteException;
+	public int getID() throws RemoteException;
+	public ArrayList<IMessage> getMessages(int userid) throws RemoteException;
+	public ArrayList<IMessage> getInbox() throws RemoteException;
+	public void closeChatroom(int chatid) throws RemoteException;
+	public String getCity() throws RemoteException;
+	public String getCountry() throws RemoteException;
+	public String getSex() throws RemoteException;
+	public String getBday() throws RemoteException;
+	public String getBday(String format) throws RemoteException;
+	public int getUnreadMessages() throws RemoteException;
+	public Boolean setFacebook(String username) throws RemoteException;
+	public String getPicture() throws RemoteException;
+	public void setToken(String token) throws RemoteException;
+	public String getToken() throws RemoteException;
+	public boolean setPassword(String password) throws RemoteException;
+	public boolean setPublic(boolean isPublic) throws RemoteException;
+	public boolean setActive(boolean isActive) throws RemoteException;
+	public boolean setSex(char sex) throws RemoteException;
+	public boolean setBday(Date bday) throws RemoteException;
+	public boolean setCountry(String country) throws RemoteException;
+	public boolean setCity(String city) throws RemoteException;
+	public boolean setEmail(String email) throws RemoteException;
+	public boolean setName(String name) throws RemoteException;
+	public void setFacepalm(Boolean is_fp) throws RemoteException;
+	public Boolean isFacepalm() throws RemoteException;
+	public boolean isPublic() throws RemoteException;
+	public boolean isActive() throws RemoteException;
+	public IMessage getSentMessage(int messageid) throws RemoteException;
+	public boolean removeMessage(int messageid) throws RemoteException;
+	public ArrayList<IChatroom> getChatrooms() throws RemoteException;
+}

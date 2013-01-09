@@ -1,0 +1,85 @@
+<%@page import="java.util.ArrayList"%>
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="java.text.DateFormat"%>
+<%@page import="java.math.BigInteger"%>
+<%@page import="server.classes.*"%>
+<%@page import="java.security.MessageDigest"%>
+
+<%
+	IUser user = (IUser)session.getAttribute("user");
+	IPost post = (IPost)request.getAttribute("post");
+	IUser sender = post.getSender();
+	DateFormat df = new SimpleDateFormat("dd MMM yyyy, HH:mm");
+
+	ArrayList<Attach> attachs = post.getAttachments();
+%>
+
+
+ 
+<!-- Modal -->
+<div id="delete_post_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+		<h3 id="myModalLabel">Delete Post</h3>
+	</div>
+	<div class="modal-body">
+		<p>Do you wish to <b>delete</b> your post?<br>This action <b>cannot</b> be reversed!</p>
+	</div>
+	<div class="modal-footer">
+		<form id="delete_form" method="post" action="/post/id">	
+			<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+			<input type="hidden" name="method" value="delete">
+			<input type="hidden" name="nounce" value="${nounce}">
+			<button class="btn btn-danger">Delete</button>
+		</form>
+	</div>
+</div>
+
+<div id="comments<%= post.getID() %>" class="container-fluid">
+	<% if (user.amIowner(post)) { %>
+		<div class="btn-group pull-right" style="margin-right: 5px;">
+			<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+			  	<span class="caret"></span>
+			</a>
+			<ul class="dropdown-menu">
+				<li><a href="#" onClick="editPost(<%= post.getID() %>);"><i class="icon-edit"></i> Edit</a></li>
+				<li><a href="#delete_post_modal" onClick="deletePost(<%= post.getID() %>)" role="button" data-toggle="modal"><i class="icon-remove"></i> Delete</a></li>
+			</ul>
+		</div>
+	<% } %>
+  	<div class="row-fluid well" style="width: 92%;">
+  		<div class="span2">
+  			<a style="cursor:pointer;"  data-placement="bottom" rel="popover" class="popover-hover" data-title="<%= sender.getName() %>" data-content="<a href='/user/<%= post.getSenderID() %>'>View profile</a><br><a href='\message/<%= post.getSenderID() %>'>New message</a>"> 
+  				<img src="<%= sender.getPicture() %>?s=50" width="50px" height="50px" />
+  			</a>
+  		</div>	
+  		<div class="span10">
+  			<b><a href="\user/<%= post.getSenderID() %>"><%= sender.getName() %></a></b>
+  		 	<i style="color:gray; font-size: 10px;">on <b><%= df.format(post.getSending()) %></b></i>
+  			<br>
+  			<p id="post_<%= post.getID() %>" style="word-wrap: break-word;">${post.getContent()}</p>
+  			<form method="post" action="/post/<%= post.getID() %>">	
+  				<input type="hidden" name="nounce" value="${nounce}">
+  				<textarea rel="popover" id="edit_post_<%= post.getID() %>" class="edit-post shiftenter" name="content" rows="1" data-placement="right" style="width: 100% !important;" data-content="Press Enter to submit your changes..." data-original-title="Edit your post! :)" placeholder="Make your changes...">${post.getContent()}</textarea>
+  			</form>
+  			<table>
+  				<tbody>
+		  			<tr>
+		  			<% int counter = 0; %>
+		  			<% for (Attach a : attachs) { %>
+		  				<td>
+		  					<a href="<%= a.getFile_path() %>">
+		  						<img class="attach_img" src="<%= a.getFile_path() %>" width="120" /><br>
+		  					</a>
+		  				</td>
+		  			<% } %>
+		  			</tr>
+		  		</tbody>
+  			</table>
+			<% if (attachs.size() > 0) { %>
+				<br>
+			<% } %>
+  			<%@include file="/WEB-INF/views/Comments/_comments.jspf" %>
+ 		</div>
+  	</div>
+</div>

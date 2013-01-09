@@ -1,0 +1,23 @@
+<%
+IUser pm_user = (IUser)request.getAttribute("view");
+
+Boolean in_wall = (Boolean)request.getAttribute("in_wall");
+Boolean in_chat = (Boolean)request.getAttribute("in_chat");
+
+in_wall = in_wall == null ? false : true;
+in_chat = in_chat == null ? false : true;
+%>
+
+<ul class="nav nav-pills nav-stacked well">
+	<li class="<%= in_wall ? "active" : "" %>"><a href="\">Wall</a></li>
+	<% if (pm_user == null) { %>
+	<li><a href="\messages">
+		Messages <span id="unread" class="badge badge-important"></span></a>
+	</li>
+	<% } else { %>
+	<li><a href="\messages/${view.getID()}">
+		Send Message</a>
+	</li>
+	<% } %>
+	<li class="<%= in_chat ? "active" : "" %>"><a href="\chats">Chat Rooms</a></li>
+</ul>

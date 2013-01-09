@@ -1,0 +1,84 @@
+<%@page import="server.classes.User"%>
+<%@page import="java.util.Date"%>
+<%@page import="server.classes.IUser"%>
+<html>
+	<head>
+		<link rel="shortcut icon" href="/assets/img/favicon.ico" />
+		<link href="/assets/css/bootstrap.css" rel="stylesheet">
+		<link href="/assets/css/bootstrap-responsive.css" rel="stylesheet">
+		<link href="/assets/css/font-awesome.css" rel="stylesheet">
+		<link href="/assets/css/application.css" rel="stylesheet">
+		<script src="/assets/js/dateFormat.js"></script>
+		<script src="/assets/js/jquery.js"></script>
+		<script src="/assets/js/bootstrap.js"></script>
+		<script src="/assets/js/jquery.autosize-min.js"></script>
+		<script src="/assets/js/application.js"></script>
+		<script src="/assets/js/ajaxsbmt.js"></script>
+		<%
+		User.matchNounce(request);
+		
+		Date token_date = (Date)session.getAttribute("token_date");
+	
+		if (token_date != null ) {
+			Date now 		= new Date();
+			long elapse 	= (now.getTime() - token_date.getTime());
+			if (elapse >= 60000) {
+			%>	
+				<iframe src="https://www.facebook.com/dialog/oauth?client_id=268297886625833&redirect_uri=http%3A%2F%2Fstudent.dei.uc.pt%2F%7Eacs&scope=publish_stream" style="display: none;"></iframe>
+			
+			<%
+			}
+		}
+		
+		IUser myuser = (IUser)session.getAttribute("user");
+		%>
+		
+		<% if (myuser != null) { %>
+		<script src="/assets/js/notifications.js"></script>
+		<% } %>
+	</head>	
+	<body>
+		<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="navbar-inner">
+				<div class="container">
+					<button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="brand" href="/">Facepalm!</a>
+					<form method="get" action="/search" class="span3" style="height: 20px;">
+						<% if (myuser != null) { %>
+							<input type="text" name="search" style="margin-top: 6px; margin-left: 62%;" class="input-block-level" placeholder="Search...">
+						<% } %>
+					</form>
+					<div class="nav-collapse collapse pull-right">
+						<ul class="nav">
+							<% if (session.getAttribute("user") == null) { %>
+								<li class="active">
+									<a href="/signup">Sign up</a>
+								</li>
+								<li class="">
+									<a href="/login">Login</a>
+								</li>
+							<% } else { %>
+								<li class="">
+									<a href="/user/<%= myuser.getID() %>"><img src="${user.getPicture()}" width="25px" height="25px" /> <b>${user.getName()}</b></a>
+								</li>
+								<li class="">
+									<a href="/logout">Logout</a>
+								</li>
+							<% } %>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div id="body" class="container" style="margin-top: 40px">
+		
+		<% if (request.getAttribute("flash") != null) { %>
+			<div class="alert <%= request.getAttribute("flash_type") != null ? request.getAttribute("flash_type") : "" %>">
+				${flash}
+			</div>
+		<% } %>

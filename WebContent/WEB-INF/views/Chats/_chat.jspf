@@ -1,0 +1,231 @@
+
+
+<%@page import="server.classes.IChatroom"%>
+<%@page import="java.util.ArrayList"%>
+<script type="text/javascript">
+    var Chat = {};
+
+    Chat.socket = null;
+    
+    Chat.addUser = function(str) {
+    	str 	= str.substring(1);
+    	strs 	= str.split(";");
+    	id		= strs[0];
+    	name	= strs[1];
+    	pic		= strs[2];
+    	
+    	if ($("#chat_user_" + id).length > 0)
+    		$("#chat_user_" + id).show();
+    	else
+    		$("#chat_users").append('<div id="chat_user_' + id + '" style="margin-top: 5px;"><img src="' + pic + '" width="25px" height="25px"/> ' + name + '</div>');
+    }
+    
+    Chat.removeUser = function(data) {
+    	data 	= data.substring(1);
+    	$("#chat_user_" + data).hide();
+    }
+
+    Chat.connect = (function(host) {
+        if ('WebSocket' in window) {
+            Chat.socket = new WebSocket(host);
+        } else if ('MozWebSocket' in window) {
+            Chat.socket = new MozWebSocket(host);
+        } else {
+            Console.log('Error: WebSocket is not supported by this browser.');
+            return;
+        }
+
+        Chat.socket.onopen = function () {
+            document.getElementById('chat').onkeydown = function(event) {
+                if (event.keyCode == 13) {
+                	var data = new FormData();
+                	for (var i = 0; i < $('#attachments').get(0).files.length; i++) {
+                		data.append('attach'+i, $('#attachments').get(0).files.item(i));
+                	}
+                	data.append('count', $('#attachments').get(0).files.length);
+
+                	$.ajax({
+                	    url: '/message/0',
+                	    data: data,
+                	    cache: false,
+                	    contentType: false,
+                	    processData: false,
+                	    type: 'POST',
+                	    success: Chat.sendMessage
+                	});
+                    //Chat.sendMessage();
+                }
+            };
+        };
+        
+   		
+
+        Chat.socket.onclose = function () {
+            document.getElementById('chat').onkeydown = null;
+            Console.log('<b><i>You lost connection to the chat :( we should go out sometime...</i></b>');
+        };
+
+        Chat.socket.onmessage = function (message) {
+        	var func = message.data;
+        	func = func.charAt(0);
+        	
+        	if (func == '+') {
+        		Chat.addUser(String(message.data));
+        	} else if (func == '-') {
+        		Chat.removeUser(String(message.data));
+        	} else {
+            	Console.log(message.data);
+        	}
+        };
+    });
+
+    Chat.initialize = function() {
+        if (window.location.protocol == 'http:') {
+            Chat.connect('ws://' + window.location.host + '/chatroom/${chatid}');
+        } else {
+            Chat.connect('wss://' + window.location.host + '/chatroom/${chatid}');
+        }
+    };
+
+    Chat.sendMessage = function(args) {
+        var message = document.getElementById('chat').value;
+        if (message != '') {
+            Chat.socket.send(message + ";" + args);
+            document.getElementById('chat').value = '';
+        }
+    };
+
+    var Console = {};
+
+    Console.log = (function(message) {
+        var console = document.getElementById('console');
+        var p = document.createElement('p');
+        p.style.wordWrap = 'break-word';
+        p.innerHTML = message;
+        console.appendChild(p);
+        console.scrollTop = console.scrollHeight;
+    });
+
+    Chat.initialize();
+
+</script>
+
+<noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websockets rely on Javascript being enabled. Please enable
+    Javascript and reload this page!</h2></noscript>
+
+<%
+IChatroom room	= (IChatroom)request.getAttribute("room");
+IUser owner 	= (IUser)request.getAttribute("owner");
+IUser curr 		= (IUser)request.getSession().getAttribute("user");
+String role		= room.getUserRole(curr.getID());
+Integer rating 	= room.getRating();
+%>    
+ 
+ <script>
+ 
+ function vote(n) {
+ 	$.ajax({
+ 	    url: '/chats/${chatid}?method=post&chatid=${chatid}&vote='+n,
+ 	    type: 'POST'
+ 	});
+
+ }
+ </script>
+ 
+<% if (owner.getID() == curr.getID()) { %>
+
+<%
+ArrayList<IUser> users = room.getUsers();
+%>
+
+<script>
+function changeRole(userid) {
+	$.ajax({
+	    url: '/chats/${chatid}?method=post&chatid=${chatid}&userid='+userid+'&role='+$("#role"+userid).val(),
+	    type: 'POST'
+	});
+}
+
+
+function closeChatroom(userid) {
+	$.ajax({
+	    url: '/chats/${chatid}?method=delete&chatid=${chatid}',
+	    type: 'POST'
+	});
+}
+
+function updateName(e) {
+	if (e.keyCode == 13 && $("#newtitle").val() != "") {
+		$.ajax({
+		    url: '/chats/${chatid}?method=post&chatid=${chatid}&title='+$("#newtitle").val(),
+		    type: 'POST'
+		});
+		$("#currtitle").html($("#newtitle").val());
+		$("#chattitle").html($("#newtitle").val());
+	}
+}
+
+</script>
+
+
+
+<div id="manage_room_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="profileRemovalLabel" aria-hidden="true">
+	<form id="manage_form" method="post" action="/chats/${chatid}">	
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+			<h3 id="myModalLabel"><a id="currtitle" href="#" title="Edit title" onClick="$(this).hide(); $('#newtitle').show();">${title}</a><input style="display: none;" id="newtitle" type="text" onKeyDown="updateName(event);" value="${title}"></h3>
+		</div>
+		<div class="modal-body">
+			<table class="table table-striped">
+			<tbody>
+			<% for (IUser u : users) { %>
+                <tr>
+                  	<td><a href="/user/<%= u.getID() %>"><img src="<%= u.getPicture() %>" width="25px" height="25px"> <%= u.getName() %></a></td>
+                  	<td>
+                  		<select id="role<%= u.getID() %>" name="role" class="input-block-level" onclick="changeRole(<%= u.getID() %>);">
+							<option value="watcher" <%= room.getUserRole(u.getID()).equalsIgnoreCase("WATCHER") ? "selected" : "" %>>Watcher</option>
+							<option value="poster" <%= room.getUserRole(u.getID()).equalsIgnoreCase("POSTER") ? "selected" : "" %>>Poster</option>
+						</select>
+					</td>
+                </tr>        
+			<% } %>
+			</tbody>
+			</table>
+		</div>
+		<div class="modal-footer">
+			<% if (!room.isClosed()) { %>	
+				<a href="#" onClick="closeChatroom();" class="btn btn-danger" style="float: left !important;">Close Chatroom</a>
+			<% } %>
+			<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+			<input type="hidden" name="nounce" value="${nounce}">
+		</div>
+	</form>
+</div>
+
+<% } %> 
+ 
+<div>
+	<div class="row-fluid">
+		<div class="span8"><b id="chattitle">${title}</b> - <a href="\user/${ownerid}">${owner_name}</a></div>
+		<div class="span4">
+			<span class="rating">
+				<span onClick="vote(3);" class="star<%= rating >= 3 ? "-selected" : "" %>"></span>
+				<span onClick="vote(2);" class="star<%= rating >= 2 ? "-selected" : "" %>"></span>
+                <span onClick="vote(1);" class="star<%= rating >= 1 ? "-selected" : "" %>"></span>
+           </span>
+			<% if (owner.getID() == curr.getID()) { %>
+				<a href="#manage_room_modal" role="button" data-toggle="modal" class="pull-right" title="Manage Chat Room"><i class="icon-edit"></i></a>
+			<% } %>
+		</div>
+	</div>
+    <div id="console-container">
+        <div id="console" class="console-class"></div>
+    </div>
+    <br>
+    <% if (!role.equalsIgnoreCase("WATCHER") && !room.isClosed()) { %>
+    <p>
+        <input type="text" placeholder="type and press enter to chat" class="input-block-level" id="chat"><br>
+        <input id="attachments" name="attach" type="file" multiple>
+    </p>
+    <% } %>
+</div>
